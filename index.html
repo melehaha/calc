@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vorona Calculator</title>
+
+<style>
+body {
+    font-family: Arial, sans-serif;
+    max-width: 800px;
+    margin: 40px auto;
+    padding: 20px;
+}
+
+h1 {
+    margin-bottom: 20px;
+}
+
+label {
+    display: block;
+    margin-top: 10px;
+}
+
+input, select {
+    width: 100%;
+    padding: 8px;
+    margin-top: 5px;
+}
+
+button {
+    margin-top: 20px;
+    padding: 10px 20px;
+    cursor: pointer;
+}
+
+.result {
+    margin-top: 30px;
+    font-size: 20px;
+    font-weight: bold;
+}
+</style>
+
+</head>
+<body>
+
+<h1>Калькулятор Vorona.car</h1>
+
+<label>
+Курс йены (JPY/RUB)
+<input type="number" id="jpyRate" value="0.55" step="0.01">
+</label>
+
+<label>
+Курс евро (EUR/RUB)
+<input type="number" id="eurRate" value="100" step="0.01">
+</label>
+
+<label>
+Ставка на аукционе (¥)
+<input type="number" id="bidPrice" value="500000">
+</label>
+
+<label>
+Возраст авто
+<select id="ageGroup">
+<option value="under3">До 3 лет</option>
+<option value="3to5">3-5 лет</option>
+<option value="over5">Старше 5 лет</option>
+</select>
+</label>
+
+<label>
+Объем двигателя (см³)
+<input type="number" id="engineVolume" value="1500">
+</label>
+
+<label>
+Расходы по Японии (₽)
+<input type="number" id="jpExpenses" value="100000">
+</label>
+
+<label>
+Фрахт (₽)
+<input type="number" id="freight" value="120000">
+</label>
+
+<label>
+СБКТС + ЭПТС + лаборатория (₽)
+<input type="number" id="documents" value="50000">
+</label>
+
+<label>
+Комиссия (₽)
+<input type="number" id="commission" value="30000">
+</label>
+
+<label>
+Бюджет клиента (₽)
+<input type="number" id="budget" value="1500000">
+</label>
+
+<button onclick="calculate()">
+Рассчитать
+</button>
+
+<div class="result" id="result"></div>
+
+<script>
+
+function calculate() {
+
+    const jpyRate = Number(document.getElementById('jpyRate').value);
+    const bidPrice = Number(document.getElementById('bidPrice').value);
+
+    const jpExpenses = Number(document.getElementById('jpExpenses').value);
+    const freight = Number(document.getElementById('freight').value);
+    const documents = Number(document.getElementById('documents').value);
+    const commission = Number(document.getElementById('commission').value);
+
+    const budget = Number(document.getElementById('budget').value);
+
+    const carPriceRub = bidPrice * jpyRate;
+
+    const total =
+        carPriceRub +
+        jpExpenses +
+        freight +
+        documents +
+        commission;
+
+    const reserve = budget - total;
+
+    document.getElementById('result').innerHTML =
+        `
+        Стоимость под ключ: ${total.toLocaleString('ru-RU')} ₽<br>
+        Запас бюджета: ${reserve.toLocaleString('ru-RU')} ₽
+        `;
+}
+
+</script>
+
+</body>
+</html>
