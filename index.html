@@ -71,6 +71,23 @@
       color: #fff;
     }
 
+    .badge {
+      display: inline-block;
+      padding: 7px 10px;
+      border-radius: 999px;
+      background: #2a2a2a;
+      border: 1px solid #444;
+      color: #ddd;
+      font-size: 13px;
+      margin-bottom: 8px;
+    }
+
+    .badge.warning {
+      background: #3a2814;
+      border-color: #77501f;
+      color: #ffd9a3;
+    }
+
     .line {
       display: flex;
       justify-content: space-between;
@@ -138,17 +155,17 @@
       <div class="row">
         <label>
           Йена, ₽
-          <input id="jpyRate" type="number" value="0.58" step="0.0001">
+          <input id="jpyRate" type="number" value="0.495" step="0.0001">
         </label>
 
         <label>
           Евро, ₽
-          <input id="eurRate" type="number" value="100" step="0.01">
+          <input id="eurRate" type="number" value="86" step="0.01">
         </label>
 
         <label>
           Доллар, ₽
-          <input id="usdRate" type="number" value="92" step="0.01">
+          <input id="usdRate" type="number" value="78" step="0.01">
         </label>
       </div>
 
@@ -176,6 +193,11 @@
         <input id="horsePower" type="number" value="120" step="1">
       </label>
 
+      <label class="checkbox-label">
+        <input id="isHybrid" type="checkbox">
+        Гибрид
+      </label>
+
       <label>
         Фрахт, $
         <input id="freightUsd" type="number" value="400" step="10">
@@ -200,13 +222,14 @@
     <section class="card">
       <h2>Расчёт</h2>
 
+      <div id="modeBadge" class="badge">Обычный расчёт</div>
       <div class="result-total" id="totalResult">0 ₽</div>
 
       <div id="breakdown"></div>
 
       <div class="note">
-        Расходы по Японии: 105 000 ¥ + 5% от части ставки свыше 1 000 000 ¥.<br>
-        Комиссия банка: 1,5% от суммы перевода, но не менее 10 000 ₽.<br>
+        Санкционный режим включается автоматически, если авто гибридное или объём ДВС больше 1900 см³.<br>
+        Для санкционного режима: фрахт 2 500 $, комиссия 60 000 ₽, комплекс ТК 85 000 ₽, японская комиссия по диапазонам ставки.<br>
         Утильсбор: до 160 л.с. — льготный; свыше 160 л.с. — повышенный по диапазонам мощности.<br>
         Калькулятор ориентировочный. Для финального расчёта дорогих/спорных авто сверяй с TKS.
       </div>
@@ -336,6 +359,26 @@
       return `${horsePower} л.с., ${ageText}, повышенный утиль = ${moneyRub(utilFeeRub)}`;
     }
 
+    function getNormalJapanExpenses(bidJpy) {
+      return 105000 + Math.max(0, bidJpy - 1000000) * 0.05;
+    }
+
+    function getSanctionJapanExpenses(bidJpy) {
+      if (bidJpy < 1000000) return 120000;
+      if (bidJpy < 2000000) return 140000;
+      if (bidJpy < 3000000) return 160000;
+      if (bidJpy < 4000000) return 180000;
+      return 200000;
+    }
+
+    function getSanctionJapanFormula(bidJpy) {
+      if (bidJpy < 1000000) return "ставка до 1 млн ¥";
+      if (bidJpy < 2000000) return "ставка от 1 до 2 млн ¥";
+      if (bidJpy < 3000000) return "ставка от 2 до 3 млн ¥";
+      if (bidJpy < 4000000) return "ставка от 3 до 4 млн ¥";
+      return "ставка от 4 до 5 млн ¥";
+    }
+
     function calculate() {
       const jpyRate = Number(document.getElementById("jpyRate").value) || 0;
       const eurRate = Number(document.getElementById("eurRate").value) || 0;
@@ -345,12 +388,20 @@
       const ageGroup = document.getElementById("ageGroup").value;
       const engineVolume = Number(document.getElementById("engineVolume").value) || 0;
       const horsePower = Number(document.getElementById("horsePower").value) || 0;
-      const freightUsd = Number(document.getElementById("freightUsd").value) || 0;
-      const tkComplex = Number(document.getElementById("tkComplex").value) || 0;
-      const commission = Number(document.getElementById("commission").value) || 0;
+      const isHybrid = document.getElementById("isHybrid").checked;
       const tempRegistration = document.getElementById("tempRegistration").checked;
 
-      const japanExpensesJpy = 105000 + Math.max(0, bidJpy - 1000000) * 0.05;
+      const isSanction = isHybrid || engineVolume > 1900;
+
+      const userFreightUsd = Number(document.getElementById("freightUsd").value) || 0;
+      const userTkComplex = Number(document.getElementById("tkComplex").value) || 0;
+      const userCommission = Number(document.getElementById("commission").value) || 0;
+
+      const freightUsd = isSanction ? 2500 : userFreightUsd;
+      const tkComplex = isSanction ? 85000 : userTkComplex;
+      const commission = isSanction ? 60000 : userCommission;
+
+      const japanExpensesJpy = isSanction ? getSanctionJapanExpenses(bidJpy) : getNormalJapanExpenses(bidJpy);
       const transferAmountJpy = bidJpy + japanExpensesJpy;
 
       const carPriceRub = bidJpy * jpyRate;
@@ -390,9 +441,28 @@
         tempRegistrationRub +
         commission;
 
+      const modeBadge = document.getElementById("modeBadge");
+
+      if (isSanction) {
+        const reasons = [];
+        if (isHybrid) reasons.push("гибрид");
+        if (engineVolume > 1900) reasons.push("ДВС свыше 1900 см³");
+
+        modeBadge.textContent = `Санкционный расчёт: ${reasons.join(" + ")}`;
+        modeBadge.className = "badge warning";
+      } else {
+        modeBadge.textContent = "Обычный расчёт";
+        modeBadge.className = "badge";
+      }
+
       document.getElementById("totalResult").textContent = moneyRub(total);
 
       document.getElementById("breakdown").innerHTML = `
+        <div class="line">
+          <span>Режим расчёта</span>
+          <span>${isSanction ? "санкционный" : "обычный"}</span>
+        </div>
+
         <div class="line">
           <span>Ставка на аукционе</span>
           <span>${moneyJpy(bidJpy)} × ${jpyRate} = ${moneyRub(carPriceRub)}</span>
@@ -400,7 +470,7 @@
 
         <div class="line">
           <span>Расходы по Японии</span>
-          <span>105 000 ¥ + 5% свыше 1 млн = ${moneyJpy(japanExpensesJpy)} / ${moneyRub(japanExpensesRub)}</span>
+          <span>${isSanction ? `${getSanctionJapanFormula(bidJpy)} = ${moneyJpy(japanExpensesJpy)}` : `105 000 ¥ + 5% свыше 1 млн = ${moneyJpy(japanExpensesJpy)}`} / ${moneyRub(japanExpensesRub)}</span>
         </div>
 
         <div class="line">
@@ -435,12 +505,12 @@
 
         <div class="line">
           <span>Фрахт</span>
-          <span>${moneyUsd(freightUsd)} × ${usdRate} = ${moneyRub(freightRub)}</span>
+          <span>${moneyUsd(freightUsd)} × ${usdRate} = ${moneyRub(freightRub)}${isSanction ? " / санкционный фрахт" : ""}</span>
         </div>
 
         <div class="line">
           <span>Комплекс ТК</span>
-          <span>${moneyRub(tkComplex)}</span>
+          <span>${moneyRub(tkComplex)}${isSanction ? " / санкционный комплекс" : ""}</span>
         </div>
 
         <div class="line">
@@ -450,7 +520,7 @@
 
         <div class="line">
           <span>Комиссия Vorona.car</span>
-          <span>${moneyRub(commission)}</span>
+          <span>${moneyRub(commission)}${isSanction ? " / санкционная комиссия" : ""}</span>
         </div>
       `;
     }
