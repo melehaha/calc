@@ -1,144 +1,372 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Vorona Calculator</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vorona.car — калькулятор</title>
 
-<style>
-body {
-    font-family: Arial, sans-serif;
-    max-width: 800px;
-    margin: 40px auto;
-    padding: 20px;
-}
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #111;
+      color: #f3f3f3;
+    }
 
-h1 {
-    margin-bottom: 20px;
-}
+    .app {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      padding: 24px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
 
-label {
-    display: block;
-    margin-top: 10px;
-}
+    h1, h2 {
+      margin-top: 0;
+    }
 
-input, select {
-    width: 100%;
-    padding: 8px;
-    margin-top: 5px;
-}
+    .card {
+      background: #1c1c1c;
+      border: 1px solid #333;
+      border-radius: 16px;
+      padding: 20px;
+    }
 
-button {
-    margin-top: 20px;
-    padding: 10px 20px;
-    cursor: pointer;
-}
+    .row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
 
-.result {
-    margin-top: 30px;
-    font-size: 20px;
-    font-weight: bold;
-}
-</style>
+    label {
+      display: block;
+      margin-top: 14px;
+      font-size: 14px;
+      color: #ccc;
+    }
 
+    input, select {
+      width: 100%;
+      box-sizing: border-box;
+      margin-top: 6px;
+      padding: 11px;
+      border-radius: 10px;
+      border: 1px solid #444;
+      background: #111;
+      color: #fff;
+      font-size: 16px;
+    }
+
+    input[type="checkbox"] {
+      width: auto;
+      transform: scale(1.2);
+      margin-right: 8px;
+    }
+
+    .result-total {
+      font-size: 34px;
+      font-weight: bold;
+      margin: 20px 0;
+      color: #fff;
+    }
+
+    .line {
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+      padding: 10px 0;
+      border-bottom: 1px solid #333;
+    }
+
+    .line span:first-child {
+      color: #bbb;
+    }
+
+    .line span:last-child {
+      text-align: right;
+      font-weight: bold;
+    }
+
+    .note {
+      margin-top: 16px;
+      color: #aaa;
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .checkbox-label {
+      display: flex;
+      align-items: center;
+      margin-top: 18px;
+      color: #fff;
+    }
+
+    @media (max-width: 900px) {
+      .app {
+        grid-template-columns: 1fr;
+        padding: 14px;
+      }
+
+      .row {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
 </head>
+
 <body>
+  <div class="app">
 
-<h1>Калькулятор Vorona.car</h1>
+    <section class="card">
+      <h1>Калькулятор Vorona.car</h1>
 
-<label>
-Курс йены (JPY/RUB)
-<input type="number" id="jpyRate" value="0.55" step="0.01">
-</label>
+      <div class="row">
+        <label>
+          Йена, ₽
+          <input id="jpyRate" type="number" value="0.58" step="0.0001">
+        </label>
 
-<label>
-Курс евро (EUR/RUB)
-<input type="number" id="eurRate" value="100" step="0.01">
-</label>
+        <label>
+          Евро, ₽
+          <input id="eurRate" type="number" value="100" step="0.01">
+        </label>
 
-<label>
-Ставка на аукционе (¥)
-<input type="number" id="bidPrice" value="500000">
-</label>
+        <label>
+          Доллар, ₽
+          <input id="usdRate" type="number" value="92" step="0.01">
+        </label>
+      </div>
 
-<label>
-Возраст авто
-<select id="ageGroup">
-<option value="under3">До 3 лет</option>
-<option value="3to5">3-5 лет</option>
-<option value="over5">Старше 5 лет</option>
-</select>
-</label>
+      <label>
+        Ставка на аукционе, ¥
+        <input id="bidJpy" type="number" value="2300000" step="10000">
+      </label>
 
-<label>
-Объем двигателя (см³)
-<input type="number" id="engineVolume" value="1500">
-</label>
+      <label>
+        Возраст авто
+        <select id="ageGroup">
+          <option value="under3">До 3 лет</option>
+          <option value="3to5">От 3 до 5 лет</option>
+          <option value="over5" selected>Старше 5 лет / непроходной</option>
+        </select>
+      </label>
 
-<label>
-Расходы по Японии (₽)
-<input type="number" id="jpExpenses" value="100000">
-</label>
+      <label>
+        Объём двигателя, см³
+        <input id="engineVolume" type="number" value="1500" step="1">
+      </label>
 
-<label>
-Фрахт (₽)
-<input type="number" id="freight" value="120000">
-</label>
+      <label>
+        Фрахт, $
+        <input id="freightUsd" type="number" value="400" step="10">
+      </label>
 
-<label>
-СБКТС + ЭПТС + лаборатория (₽)
-<input type="number" id="documents" value="50000">
-</label>
+      <label>
+        Комплекс ТК, ₽
+        <input id="tkComplex" type="number" value="57000" step="1000">
+      </label>
 
-<label>
-Комиссия (₽)
-<input type="number" id="commission" value="30000">
-</label>
+      <label>
+        Комиссия, ₽
+        <input id="commission" type="number" value="30000" step="1000">
+      </label>
 
-<label>
-Бюджет клиента (₽)
-<input type="number" id="budget" value="1500000">
-</label>
+      <label class="checkbox-label">
+        <input id="tempRegistration" type="checkbox">
+        Нужна временная регистрация +10 000 ₽
+      </label>
+    </section>
 
-<button onclick="calculate()">
-Рассчитать
-</button>
+    <section class="card">
+      <h2>Расчёт</h2>
 
-<div class="result" id="result"></div>
+      <div class="result-total" id="totalResult">0 ₽</div>
 
-<script>
+      <div id="breakdown"></div>
 
-function calculate() {
+      <div class="note">
+        Расходы по Японии считаются так: 105 000 ¥ + 5% от части ставки свыше 1 000 000 ¥.<br>
+        Комиссия банка: 1,5% от суммы перевода, но не менее 10 000 ₽.<br>
+        Таможня считается ориентировочно для физлица по ставкам в евро за см³.
+      </div>
+    </section>
 
-    const jpyRate = Number(document.getElementById('jpyRate').value);
-    const bidPrice = Number(document.getElementById('bidPrice').value);
+  </div>
 
-    const jpExpenses = Number(document.getElementById('jpExpenses').value);
-    const freight = Number(document.getElementById('freight').value);
-    const documents = Number(document.getElementById('documents').value);
-    const commission = Number(document.getElementById('commission').value);
+  <script>
+    const inputs = document.querySelectorAll("input, select");
 
-    const budget = Number(document.getElementById('budget').value);
+    inputs.forEach(input => {
+      input.addEventListener("input", calculate);
+      input.addEventListener("change", calculate);
+    });
 
-    const carPriceRub = bidPrice * jpyRate;
+    function moneyRub(value) {
+      return Math.round(value).toLocaleString("ru-RU") + " ₽";
+    }
 
-    const total =
+    function moneyJpy(value) {
+      return Math.round(value).toLocaleString("ru-RU") + " ¥";
+    }
+
+    function moneyUsd(value) {
+      return Number(value).toLocaleString("ru-RU") + " $";
+    }
+
+    function getDutyRate(ageGroup, engineVolume) {
+      if (ageGroup === "3to5") {
+        if (engineVolume <= 1000) return 1.5;
+        if (engineVolume <= 1500) return 1.7;
+        if (engineVolume <= 1800) return 2.5;
+        if (engineVolume <= 2300) return 2.7;
+        if (engineVolume <= 3000) return 3.0;
+        return 3.6;
+      }
+
+      if (ageGroup === "over5") {
+        if (engineVolume <= 1000) return 3.0;
+        if (engineVolume <= 1500) return 3.2;
+        if (engineVolume <= 1800) return 3.5;
+        if (engineVolume <= 2300) return 4.8;
+        if (engineVolume <= 3000) return 5.0;
+        return 5.7;
+      }
+
+      return null;
+    }
+
+    function calculateUnder3Duty(carPriceRub, engineVolume, eurRate) {
+      const carPriceEur = carPriceRub / eurRate;
+
+      let percentRate = 0.48;
+      let minRatePerCc = 20;
+
+      if (carPriceEur <= 8500) {
+        percentRate = 0.54;
+        minRatePerCc = 2.5;
+      } else if (carPriceEur <= 16700) {
+        percentRate = 0.48;
+        minRatePerCc = 3.5;
+      } else if (carPriceEur <= 42300) {
+        percentRate = 0.48;
+        minRatePerCc = 5.5;
+      } else if (carPriceEur <= 84500) {
+        percentRate = 0.48;
+        minRatePerCc = 7.5;
+      } else if (carPriceEur <= 169000) {
+        percentRate = 0.48;
+        minRatePerCc = 15;
+      }
+
+      const dutyByPercentRub = carPriceRub * percentRate;
+      const dutyByVolumeRub = engineVolume * minRatePerCc * eurRate;
+
+      return {
+        dutyRub: Math.max(dutyByPercentRub, dutyByVolumeRub),
+        formula: `${percentRate * 100}% от стоимости, но не менее ${minRatePerCc} €/см³`
+      };
+    }
+
+    function calculate() {
+      const jpyRate = Number(document.getElementById("jpyRate").value) || 0;
+      const eurRate = Number(document.getElementById("eurRate").value) || 0;
+      const usdRate = Number(document.getElementById("usdRate").value) || 0;
+
+      const bidJpy = Number(document.getElementById("bidJpy").value) || 0;
+      const ageGroup = document.getElementById("ageGroup").value;
+      const engineVolume = Number(document.getElementById("engineVolume").value) || 0;
+      const freightUsd = Number(document.getElementById("freightUsd").value) || 0;
+      const tkComplex = Number(document.getElementById("tkComplex").value) || 0;
+      const commission = Number(document.getElementById("commission").value) || 0;
+      const tempRegistration = document.getElementById("tempRegistration").checked;
+
+      const japanExpensesJpy = 105000 + Math.max(0, bidJpy - 1000000) * 0.05;
+      const transferAmountJpy = bidJpy + japanExpensesJpy;
+
+      const carPriceRub = bidJpy * jpyRate;
+      const japanExpensesRub = japanExpensesJpy * jpyRate;
+      const transferAmountRub = transferAmountJpy * jpyRate;
+
+      const bankCommissionRub = Math.max(transferAmountRub * 0.015, 10000);
+      const freightRub = freightUsd * usdRate;
+
+      let customsRub = 0;
+      let customsFormula = "";
+
+      if (ageGroup === "under3") {
+        const under3 = calculateUnder3Duty(carPriceRub, engineVolume, eurRate);
+        customsRub = under3.dutyRub;
+        customsFormula = under3.formula;
+      } else {
+        const dutyRate = getDutyRate(ageGroup, engineVolume);
+        customsRub = engineVolume * dutyRate * eurRate;
+        customsFormula = `${engineVolume} см³ × ${dutyRate} € × ${eurRate} ₽`;
+      }
+
+      const tempRegistrationRub = tempRegistration ? 10000 : 0;
+
+      const total =
         carPriceRub +
-        jpExpenses +
-        freight +
-        documents +
+        japanExpensesRub +
+        bankCommissionRub +
+        customsRub +
+        freightRub +
+        tkComplex +
+        tempRegistrationRub +
         commission;
 
-    const reserve = budget - total;
+      document.getElementById("totalResult").textContent = moneyRub(total);
 
-    document.getElementById('result').innerHTML =
-        `
-        Стоимость под ключ: ${total.toLocaleString('ru-RU')} ₽<br>
-        Запас бюджета: ${reserve.toLocaleString('ru-RU')} ₽
-        `;
-}
+      document.getElementById("breakdown").innerHTML = `
+        <div class="line">
+          <span>Ставка на аукционе</span>
+          <span>${moneyJpy(bidJpy)} × ${jpyRate} = ${moneyRub(carPriceRub)}</span>
+        </div>
 
-</script>
+        <div class="line">
+          <span>Расходы по Японии</span>
+          <span>105 000 ¥ + 5% свыше 1 млн = ${moneyJpy(japanExpensesJpy)} / ${moneyRub(japanExpensesRub)}</span>
+        </div>
 
+        <div class="line">
+          <span>Сумма перевода</span>
+          <span>${moneyJpy(transferAmountJpy)} = ${moneyRub(transferAmountRub)}</span>
+        </div>
+
+        <div class="line">
+          <span>Комиссия банка</span>
+          <span>1,5%, но не менее 10 000 ₽ = ${moneyRub(bankCommissionRub)}</span>
+        </div>
+
+        <div class="line">
+          <span>Таможенная пошлина</span>
+          <span>${customsFormula} = ${moneyRub(customsRub)}</span>
+        </div>
+
+        <div class="line">
+          <span>Фрахт</span>
+          <span>${moneyUsd(freightUsd)} × ${usdRate} = ${moneyRub(freightRub)}</span>
+        </div>
+
+        <div class="line">
+          <span>Комплекс ТК</span>
+          <span>${moneyRub(tkComplex)}</span>
+        </div>
+
+        <div class="line">
+          <span>Временная регистрация</span>
+          <span>${tempRegistration ? moneyRub(tempRegistrationRub) : "не нужна"}</span>
+        </div>
+
+        <div class="line">
+          <span>Комиссия Vorona.car</span>
+          <span>${moneyRub(commission)}</span>
+        </div>
+      `;
+    }
+
+    calculate();
+  </script>
 </body>
 </html>
