@@ -360,7 +360,7 @@
     }
 
     function getNormalJapanExpenses(bidJpy) {
-      return 105000 + Math.max(0, bidJpy - 1000000) * 0.05;
+      return 110000 + Math.max(0, bidJpy - 1000000) * 0.05;
     }
 
     function getSanctionJapanExpenses(bidJpy) {
@@ -470,7 +470,7 @@
 
         <div class="line">
           <span>Расходы по Японии</span>
-          <span>${isSanction ? `${getSanctionJapanFormula(bidJpy)} = ${moneyJpy(japanExpensesJpy)}` : `105 000 ¥ + 5% свыше 1 млн = ${moneyJpy(japanExpensesJpy)}`} / ${moneyRub(japanExpensesRub)}</span>
+          <span>${isSanction ? `${getSanctionJapanFormula(bidJpy)} = ${moneyJpy(japanExpensesJpy)}` : `110 000 ¥ + 5% свыше 1 млн = ${moneyJpy(japanExpensesJpy)}`} / ${moneyRub(japanExpensesRub)}</span>
         </div>
 
         <div class="line">
